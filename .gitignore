@@ -50,3 +50,9 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Internal / dev-only files — not for public contributors
+AGENT_CONTEXT.md
+SYSTEM_CONTEXT_HANDOFF.md
+CLAUDE.md
+backend/test_api_key.py

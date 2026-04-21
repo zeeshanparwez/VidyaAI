@@ -195,13 +195,11 @@ def submit_quiz(quiz_id: int, req: QuizSubmitRequest, db: Session = Depends(get_
     correct = 0
     total = len(questions)
 
-    for q in questions:
-        q_id = str(q.get("id", ""))
-        student_answer = answers.get(q_id, "").strip().upper()
-        correct_answer = q.get("correct", "").strip().upper()
-        if student_answer and correct_answer:
-            if student_answer[0] == correct_answer[0]:
-                correct += 1
+    for i, q in enumerate(questions):
+        student_answer = str(answers.get(str(i), "")).strip()
+        correct_answer = str(q.get("correct", "")).strip()
+        if student_answer and correct_answer and student_answer == correct_answer:
+            correct += 1
 
     score = (correct / total * 100) if total > 0 else 0
 

@@ -87,10 +87,7 @@ export default function StudentQuiz({ user }) {
     }
 
     if (result) {
-        const wrongQuestions = questions.filter(q => {
-            const sa = (answers[String(q.id)] || '').toUpperCase().charAt(0)
-            return sa !== (q.correct || '').toUpperCase().charAt(0)
-        })
+        const wrongQuestions = questions.filter((q, qi) => answers[String(qi)] !== String(q.correct))
 
         return (
             <div style={{ maxWidth: 700, margin: '40px auto', padding: '0 24px' }}>
@@ -149,7 +146,7 @@ export default function StudentQuiz({ user }) {
                                     <FlashCard
                                         key={i}
                                         front={q.question}
-                                        back={{ answer: q.correct, explanation: q.explanation }}
+                                        back={{ answer: q.options?.[q.correct] || String(q.correct), explanation: q.explanation }}
                                     />
                                 ))}
                             </div>
@@ -159,14 +156,16 @@ export default function StudentQuiz({ user }) {
                     {/* Answer Key */}
                     <div style={{ textAlign: 'left', marginTop: 8 }}>
                         <h3 style={{ marginBottom: 16 }}>Answer Key</h3>
-                        {questions.map((q, i) => {
-                            const studentAns = answers[String(q.id)] || ''
-                            const isCorrect = studentAns.toUpperCase().charAt(0) === q.correct?.toUpperCase().charAt(0)
+                        {questions.map((q, qi) => {
+                            const selectedIdx = answers[String(qi)]
+                            const isCorrect = selectedIdx !== undefined && selectedIdx === String(q.correct)
+                            const studentAnsText = selectedIdx !== undefined ? (q.options?.[parseInt(selectedIdx)] || selectedIdx) : 'Not answered'
+                            const correctAnsText = q.options?.[q.correct] || String(q.correct)
                             return (
-                                <div key={i} className="concept-card" style={{ borderColor: isCorrect ? 'var(--success)' : 'var(--danger)' }}>
-                                    <h4>{isCorrect ? '✅' : '❌'} Q{q.id}: {q.question}</h4>
-                                    <p>Your answer: <strong>{studentAns || 'Not answered'}</strong></p>
-                                    <p>Correct: <strong>{q.correct}</strong></p>
+                                <div key={qi} className="concept-card" style={{ borderColor: isCorrect ? 'var(--success)' : 'var(--danger)' }}>
+                                    <h4>{isCorrect ? '✅' : '❌'} Q{qi + 1}: {q.question}</h4>
+                                    <p>Your answer: <strong>{studentAnsText}</strong></p>
+                                    <p>Correct: <strong>{correctAnsText}</strong></p>
                                     {q.explanation && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{q.explanation}</p>}
                                 </div>
                             )
@@ -190,24 +189,21 @@ export default function StudentQuiz({ user }) {
 
             {questions.map((q, qi) => (
                 <div key={qi} className="question-card">
-                    <h4>Q{q.id}. {q.question}</h4>
+                    <h4>Q{qi + 1}. {q.question}</h4>
                     {q.difficulty && <span className="badge badge-info" style={{ marginBottom: 12 }}>{q.difficulty}</span>}
                     <div>
-                        {q.options?.map((opt, oi) => {
-                            const letter = opt.charAt(0)
-                            return (
-                                <label key={oi} className={`option ${answers[String(q.id)] === letter ? 'selected' : ''}`}>
-                                    <input
-                                        type="radio"
-                                        name={`q-${q.id}`}
-                                        value={letter}
-                                        checked={answers[String(q.id)] === letter}
-                                        onChange={() => setAnswers({ ...answers, [String(q.id)]: letter })}
-                                    />
-                                    <span>{opt}</span>
-                                </label>
-                            )
-                        })}
+                        {q.options?.map((opt, oi) => (
+                            <label key={oi} className={`option ${answers[String(qi)] === String(oi) ? 'selected' : ''}`}>
+                                <input
+                                    type="radio"
+                                    name={`q-${qi}`}
+                                    value={oi}
+                                    checked={answers[String(qi)] === String(oi)}
+                                    onChange={() => setAnswers({ ...answers, [String(qi)]: String(oi) })}
+                                />
+                                <span>{opt}</span>
+                            </label>
+                        ))}
                     </div>
                 </div>
             ))}
