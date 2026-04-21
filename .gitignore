@@ -51,6 +51,9 @@ Thumbs.db
 .coverage
 htmlcov/
 
+# LinkedIn / marketing assets
+linkedin-carousel.html
+
 # Internal / dev-only files — not for public contributors
 AGENT_CONTEXT.md
 SYSTEM_CONTEXT_HANDOFF.md
