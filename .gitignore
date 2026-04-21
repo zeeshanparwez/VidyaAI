@@ -15,10 +15,11 @@ venv_linux/
 .venv/
 env/
 
-# Environment & secrets
+# Environment & secrets — never commit real keys
 .env
-.env.*
 *.env
+# Allow the example template
+!.env.example
 
 # Database
 *.db
