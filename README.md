@@ -92,21 +92,83 @@ Every agent logs its `input_json`, `output_json`, and `reasoning` to the `agent_
 
 ## Architecture
 
+### System Overview
+
+```mermaid
+flowchart TD
+    classDef user   fill:#818cf8,stroke:#6366f1,color:#fff
+    classDef portal fill:#7dd3fc,stroke:#0284c7,color:#000
+    classDef be     fill:#6ee7b7,stroke:#059669,color:#000
+    classDef agent  fill:#fde68a,stroke:#d97706,color:#000
+    classDef store  fill:#94a3b8,stroke:#475569,color:#fff
+    classDef cloud  fill:#d8b4fe,stroke:#9333ea,color:#000
+
+    T(["👩‍🏫 Teacher"]):::user
+    S(["👨‍🎓 Student"]):::user
+    AD(["🛡️ Admin"]):::user
+
+    subgraph FE["🖥️  Frontend — React 18 + Vite  ·  port 2708"]
+        direction LR
+        TP["Teacher Portal\nDashboard · Session Prep · Live Class\nQuiz Manager · Analytics · PDF Export"]:::portal
+        SP["Student Portal\nDashboard · Courses · Quizzes\nStudy Plan · Flashcards"]:::portal
+        AP["Admin Panel\nUser Management · Bulk CSV Import"]:::portal
+    end
+
+    T --> TP
+    S --> SP
+    AD --> AP
+
+    subgraph BE["⚙️  Backend — FastAPI + Uvicorn  ·  port 2709"]
+        direction LR
+        AUTH["🔐 JWT Auth"]:::be
+        ROUTERS["10 REST Routers"]:::be
+        AUTH --> ROUTERS
+    end
+
+    FE -->|"HTTP /api/*"| BE
+
+    subgraph PIPE["🧠  AI Agent Pipeline — LangGraph StateGraph"]
+        direction LR
+        A1["① Schedule"]:::agent --> A2["② Syllabus"]:::agent --> A3["③ Planning"]:::agent --> A4["④ Content\n+ RAG"]:::agent --> A5["⑤ Feedback"]:::agent --> A6["⑥ Adaptive"]:::agent --> A7["⑦ Personalise"]:::agent
+    end
+
+    ROUTERS -->|"POST /api/sessions/generate"| PIPE
+
+    DB[("🗄️ SQLite Database\n9 tables")]:::store
+    VS[("🔢 NumPy Vector Store\nRAG chunks · cosine sim")]:::store
+
+    ROUTERS <-->|"SQLAlchemy ORM"| DB
+    A4 <-->|"embed · cosine search"| VS
+
+    subgraph AZ["☁️  Azure OpenAI"]
+        direction LR
+        GPT["GPT-4o-mini\nChat Completions"]:::cloud
+        EMB["text-embedding-ada-002\nEmbeddings"]:::cloud
+    end
+
+    PIPE -->|"structured prompts"| GPT
+    A4 -->|"embed text chunks"| EMB
+    EMB -->|"store vectors"| VS
 ```
-┌──────────────┐     ┌──────────────────┐     ┌──────────────────────────┐
-│  React 18    │────▶│  FastAPI Backend  │────▶│  Azure OpenAI (GPT-4o)   │
-│  Vite SPA    │     │  Port 2709        │     │  Chat + Embeddings        │
-│  Port 2708   │     └────────┬─────────┘     └──────────────────────────┘
-└──────────────┘              │
-                    ┌─────────▼──────────┐
-                    │  LangGraph Pipeline │
-                    │  7-Agent Orchestr.  │
-                    └─────────┬──────────┘
-                              │
-                   ┌──────────▼──────────┐
-                   │  SQLite + NumPy      │
-                   │  Vector Store (RAG)  │
-                   └─────────────────────┘
+
+### AI Agent Pipeline — Step by Step
+
+```mermaid
+flowchart LR
+    classDef step fill:#fef3c7,stroke:#d97706,color:#000
+    classDef rag  fill:#dbeafe,stroke:#3b82f6,color:#000
+    classDef out  fill:#dcfce7,stroke:#16a34a,color:#000
+
+    S1["① Schedule\nAgent\n─────────────\nFinds next\ntimetable slot"]:::step
+    S2["② Syllabus\nAgent\n─────────────\nPrioritises\npending topics"]:::step
+    S3["③ Planning\nAgent\n─────────────\nScopes plan\nto ≤ 30 min"]:::step
+    S4["④ Content\nAgent\n─────────────\nRAG · top-3 chunks\n→ concepts + examples"]:::rag
+    S5["⑤ Feedback\nAgent\n─────────────\nSpots weak areas\nfrom quiz data"]:::step
+    S6["⑥ Adaptive\nAgent\n─────────────\nRebalances future\nsessions"]:::step
+    S7["⑦ Personalise\nAgent\n─────────────\nAdapts tone\nto teacher prefs"]:::step
+    OUT["📋 Session Plan\n─────────────\nConcepts · Flow\nMisconceptions\nExamples · Quiz"]:::out
+
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> OUT
 ```
 
 ---
