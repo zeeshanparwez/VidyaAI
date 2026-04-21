@@ -1,74 +1,85 @@
 # VidyaAI — AI-Driven Teaching & Learning Portal
 
-> An intelligent, full-stack education platform that helps teachers prepare sessions using a **multi-agent AI pipeline**, and gives students a personalised learning experience — quizzes, announcements, and adaptive study plans.
+> An intelligent, full-stack education platform that helps teachers prepare sessions using a **7-agent AI pipeline**, and gives students a personalised learning experience — adaptive quizzes, announcements, and AI-generated study plans.
 
 ---
 
-## Screenshots
-
-### Login
-![Login](screenshots/login.png)
-
-### Teacher Dashboard
-![Teacher Dashboard](screenshots/teacher-dashboard.png)
-
-### AI-Generated Session Plan
-![AI Session Plan](screenshots/ai-session-plan.png)
-
-### Live Class Mode
-![Live Class Mode](screenshots/live-class-mode.png)
-
-### Analytics & Heatmap
-![Analytics](screenshots/analytics-heatmap.png)
-
-### Announcements Board (Teacher)
-![Announcements](screenshots/announcements-teacher.png)
-
-### Admin Panel
-![Admin Panel](screenshots/admin-panel.png)
-
-### Student Dashboard
-![Student Dashboard](screenshots/student-dashboard.png)
-
-### Personalised Study Plan
-![Personalised Study Plan](screenshots/personalised-studyplan.png)
-
-### Quiz Result with Flashcards
-![Quiz Result](screenshots/quiz-result.png)
+## Table of Contents
+- [Features at a Glance](#features-at-a-glance)
+- [Multi-Agent AI Pipeline](#multi-agent-ai-pipeline)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Demo Accounts](#demo-accounts)
+- [Environment Variables](#environment-variables)
+- [Project Structure](#project-structure)
+- [API Reference](#api-reference)
+- [Tech Stack](#tech-stack)
 
 ---
 
-## Features
+## Features at a Glance
 
-### For Teachers
-| Feature | Description |
-|---------|-------------|
-| 🧠 AI Session Prep | 7-agent LangGraph pipeline generates a 30-min prep plan — concepts, misconceptions, teaching flow, examples |
-| 📚 Syllabus Upload | AI parses raw syllabus text into structured topics with progress tracking |
-| 📅 Timetable | Weekly schedule management with drag-free slot management |
-| 🎯 Live Class Mode | Fullscreen presentation view — whiteboard, concept flipper, quiz launcher |
-| 📝 Quiz Manager | AI-generates quizzes per topic, auto-grades, shows per-student responses and leaderboard |
-| 📈 Analytics | Coverage heatmap, weak topic detection, quiz performance trends, agent audit trail |
-| 📢 Announcements | Post pinnable announcements with Info / Reminder / Urgent priority levels |
-| 📄 PDF Export | Export session plans and term reports as print-ready PDFs from the browser |
+### 🔐 Secure Login
+Role-based JWT authentication. Teachers, students, and admins each land on their own tailored portal after login.
 
-### For Students
-| Feature | Description |
-|---------|-------------|
-| 🏠 My Dashboard | Enrolled courses, upcoming sessions, recent quiz scores |
-| 📚 Course Browser | Browse and self-enroll in published courses |
-| 📝 Quizzes | Attempt AI-generated quizzes; submit and see a scored result instantly |
-| 🃏 Flashcards | Wrong answers automatically become review flashcards after submission |
-| 😃 Confidence Rating | Self-rate confidence after each quiz — feeds back to the teacher |
-| 📢 Announcements | Read teacher announcements sorted by priority and date |
+![Login](assets/login.png)
 
-### For Admins
-| Feature | Description |
-|---------|-------------|
-| 🛡️ Admin Panel | Overview stats — total users, courses, quizzes, average score |
-| 👥 User Management | Create, edit, delete users; assign roles (teacher / student / admin) |
-| 📋 Bulk Import | Upload a CSV to create multiple users at once; template download included |
-| 📊 Courses Overview | View all published courses with teacher name and enrollment count |
+---
+
+### 👩‍🏫 Teacher Experience
+
+#### Dashboard
+The teacher home gives a live overview of all subjects — syllabus progress, upcoming sessions, recent quiz scores, and quick-action buttons to jump into session prep or generate a quiz.
+
+![Teacher Dashboard](assets/teacher-dashboard.png)
+
+#### AI-Generated Session Plan
+One click triggers the full 7-agent LangGraph pipeline. Within seconds the teacher receives a structured 30-minute prep plan — key concepts, common misconceptions, a step-by-step teaching flow, worked examples, and a RAG-curated reading list.
+
+![AI Session Plan](assets/ai-session-plan.png)
+
+#### Live Class Mode
+A distraction-free fullscreen view for the classroom. Teachers can flip through concepts one by one, launch a quiz for students in real time, and track how much of the session has been covered.
+
+![Live Class Mode](assets/live-class-mode.png)
+
+#### Analytics & Coverage Heatmap
+Visual heatmap of topic coverage across the term, overlaid with quiz performance trends and weak-area signals. The agent audit trail shows exactly what each AI agent reasoned and decided.
+
+![Analytics](assets/analytics-heatmap.png)
+
+#### Announcements Board
+Teachers post announcements with **Info / Reminder / Urgent** priority levels, pin the important ones, and target a specific subject or the whole class. Posts appear instantly in the student feed.
+
+![Announcements](assets/announcements-teacher.png)
+
+---
+
+### 👨‍🎓 Student Experience
+
+#### Student Dashboard
+Students see their enrolled courses, the next upcoming session for each, their recent quiz scores at a glance, and pending announcements from their teachers.
+
+![Student Dashboard](assets/student-dashboard.png)
+
+#### Personalised Study Plan
+After each quiz the AI adapts the student's study plan — highlighting weak topics, suggesting focused revision, and reordering upcoming content based on confidence ratings.
+
+![Personalised Study Plan](assets/personalised-studyplan.png)
+
+#### Quiz with Instant Results & Flashcards
+AI-generated MCQ quizzes with per-question difficulty badges. On submission the student gets an instant score, a full answer key with explanations, and auto-generated flashcards for every question they got wrong — great for quick revision.
+
+![Quiz Result](assets/quiz-result.png)
+
+---
+
+### 🛡️ Admin Experience
+
+#### Admin Panel
+A four-tab control centre — platform stats at a glance, full user management (create / edit / delete with role assignment), a course roster with enrollment counts, and a bulk CSV import tool to onboard an entire cohort in one upload.
+
+![Admin Panel](assets/admin-panel.png)
 
 ---
 
@@ -76,15 +87,15 @@
 
 Triggered by `POST /api/sessions/generate`. Uses **LangGraph StateGraph** to run 7 agents in sequence:
 
-```
-1. ScheduleAgent        → Finds the next upcoming timetable session
-2. SyllabusAgent        → AI prioritises the next pending/partial topics
-3. SessionPlanningAgent → Scopes plan to ≤30 min
-4. ContentCurationAgent → RAG: embed topic → cosine search → inject top-3 chunks → generate concepts
-5. FeedbackAgent        → Identifies weak areas from previous quiz results
-6. AdaptiveSchedulingAgent → Rebalances future sessions around weak areas
-7. PersonalizationAgent → Adapts output style to teacher preferences
-```
+| # | Agent | What it does |
+|---|-------|-------------|
+| ① | **Schedule Agent** | Reads the timetable and finds the next upcoming session |
+| ② | **Syllabus Agent** | AI prioritises the next pending / partial topics |
+| ③ | **Planning Agent** | Scopes the prep plan to ≤ 30 minutes |
+| ④ | **Content Agent** | RAG — embeds the topic, cosine-searches the top-3 syllabus chunks, generates concepts + examples |
+| ⑤ | **Feedback Agent** | Identifies weak areas from previous quiz results |
+| ⑥ | **Adaptive Agent** | Rebalances future sessions without moving the term end date |
+| ⑦ | **Personalise Agent** | Adapts tone and output style to the teacher's saved preferences |
 
 Every agent logs its `input_json`, `output_json`, and `reasoning` to the `agent_decisions` table for full explainability.
 
@@ -193,7 +204,7 @@ source venv/bin/activate        # Mac / Linux
 pip install -r requirements.txt
 
 # Copy env template and fill in your Azure keys
-cp ../.env.example backend/.env
+cp ../.env.example .env
 
 # Seed demo data (run once)
 python seed_rich.py
@@ -257,12 +268,12 @@ CORS_ORIGINS=http://localhost:2708
 Teching_app/
 ├── .env.example              # Environment variable template
 ├── README.md
-├── screenshots/              # App screenshots for README
+├── assets/                   # App screenshots and media
 ├── backend/
 │   ├── main.py               # FastAPI app, router registration
 │   ├── config.py             # Pydantic Settings from .env
 │   ├── database.py           # SQLAlchemy engine + session
-│   ├── seed_rich.py          # Indian-name demo data (CHRO demo)
+│   ├── seed_rich.py          # Demo data with Indian names
 │   ├── models/               # 9 ORM models
 │   ├── schemas/              # Pydantic v2 request/response schemas
 │   ├── routers/              # 10 APIRouter modules
